@@ -21,7 +21,7 @@ import java.awt.AWTEvent;
 import ij.plugin.ImageCalculator;
 import ij.process.Blitter;
 
-public class Analyze_Intensity implements PlugIn {
+public class Analyze_Intensity_manualDAPI implements PlugIn {
 	
 	private ImagePlus createCytoplasmicMask(
             ImagePlus nuclearMask,
@@ -94,15 +94,8 @@ public class Analyze_Intensity implements PlugIn {
         // make masks
         ImagePlus jMask = createMaskFromImage(impJunction);
         if (jMask == null) return;
-
-        ImageProcessor dapiIp = impDAPI.getProcessor().duplicate();
-        dapiIp.setAutoThreshold("Huang");
-        dapiIp.autoThreshold();
-        dapiIp.resetMinAndMax();
-        dapiIp.setBinaryThreshold();
-        ImagePlus dMask = new ImagePlus(impDAPI.getTitle(), dapiIp);
-        Prefs.blackBackground = true;
-        IJ.run(dMask, "Median", "radius=3");
+        ImagePlus dMask = createMaskFromImage(impDapi);
+        if (dMask = null) return;
 
         // cytoplasmic mask = whole cell - nucleus - junction
         ImagePlus cytoMask = createCytoplasmicMask(dMask, jMask);
@@ -203,10 +196,10 @@ public class Analyze_Intensity implements PlugIn {
 
         int threshold = (int) gd.getNextNumber();
         ip.threshold(threshold);
+        ip.setBinaryThreshold();
         copy.setProcessor(ip);
         copy.updateAndDraw();
         Prefs.blackBackground = true;
-        IJ.run(copy, "Convert to Mask", "");
         IJ.run(copy, "Despeckle", ""); 
         IJ.run(copy, "Dilate", "");
         IJ.run(copy, "Fill Holes", "");
